@@ -1,45 +1,17 @@
-#include <Python.h>
+
+/* Need to define an internal flag to avoid an extern */
+#define LDG_INTERNAL
+#include "ldg_Python.h"
+
 #include <gem.h>
 #include <ldg.h>
 
-#define PY_API_FCOUNT   3
+#include "py_aes.h"
+
+/* --- Python-C API Calls --- */
 static void *pycallbacks[PY_API_FCOUNT];
 
-#define Py_InitModule(name,methods)     ldg_callback(pycallbacks[0],name,methods,NULL,NULL)
-#define PyArg_ParseTuple(tpl,...)       ldg_callback(pycallbacks[1],tpl,##__VA_ARGS__)
-#define Py_BuildValue(fmt,...)          ldg_callback(pycallbacks[2],fmt,##__VA_ARGS__)
-
-//PyObject* (*LPy_InitModule)(char *, PyMethodDef *, char *, PyObject *) = NULL;
-
-
-static PyObject* __CDECL py_appl_init(PyObject *self, PyObject *args)
-{
-int ret;
-
-    ret = appl_init();
-    return Py_BuildValue("i",ret);
-}
-
-static PyObject* __CDECL py_appl_exit(PyObject *self, PyObject *args)
-{
-int ret;
-
-    ret = appl_exit();
-    return Py_BuildValue("i",ret);
-}
-
-static PyObject* __CDECL py_form_alert(PyObject *self, PyObject *args)
-{
-char *text;
-int x;
-    
-    if(!PyArg_ParseTuple(args,"is",&x,&text))
-        return NULL;
-        
-    x = form_alert(x,text);
-    return Py_BuildValue("i",x);
-}
-
+/* --- Python API Bookkeeping --- */
 static PyMethodDef 
 GemMethods[] = {
     {"appl_init", py_appl_init, METH_VARARGS, "Initialize a GEM application"},
@@ -56,9 +28,10 @@ PyMODINIT_FUNC __CDECL initgem(void)
     ldg_callback(pycallbacks[0],"gem",GemMethods,NULL,NULL);
     return;
 }
+/* --- End Python API Bookkeeping --- */
 
 
-
+/* --- LDG Bookkeeping --- */
 void __CDECL assign_pycalls(void **calls)
 {
 int i;
@@ -79,12 +52,13 @@ LDGLIB LibLdg[] = {
         0x0001, 5, LibFunc, "GEM Extensions for Python", 0
 };
 
-int main( void) {
+int main( void) 
+{
         if( ldg_init( LibLdg) == -1) {
                 printf("This program is a shared library.\n");
         }
         return 0;
 }
-
+/* --- End LDG Bookkeeping --- */
 
  
