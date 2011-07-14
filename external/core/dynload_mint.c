@@ -53,6 +53,9 @@ dl_funcptr _PyImport_GetDynLoadFunc(const char *fqname, const char *shortname,
             callbacks[5] = &PyModule_AddObject;
             callbacks[6] = &PyCapsule_New;
             callbacks[7] = &PyCapsule_GetPointer;
+            callbacks[8] = &Py_IncRef;
+            callbacks[9] = &Py_DecRef;
+            callbacks[10] = Py_None;
             
             assign_pycalls(callbacks);
         

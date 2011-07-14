@@ -28,6 +28,14 @@ GemMethods[] = {
     /* AES Resource Library */
     {"rsrc_load", py_rsrc_load, METH_VARARGS, "Load a resource into memory"},
     {"rsrc_gaddr", py_rsrc_gaddr, METH_VARARGS, "Return an encapsulated memory address of a resource component"},
+    
+    /* AES Window Library */
+    {"wind_create", py_wind_create, METH_VARARGS, "Create a window"},
+    {"wind_open", py_wind_open, METH_VARARGS, "Open a window"},
+    {"wind_get", py_wind_get, METH_VARARGS, "Retrieve window information"},
+    {"wind_delete", py_wind_delete, METH_VARARGS, "Delete a window (after closing...)"},
+    {"wind_close", py_wind_close, METH_VARARGS, "Close a window"},
+    
     {NULL,NULL,0,NULL}
 };   
  
@@ -72,11 +80,18 @@ PROC LibFunc[] = {
         
         /* AES Resource Library */
         "py_rsrc_load", "Internal\n", py_rsrc_load,
-        "py_rsrc_gaddr", "Internal\n", py_rsrc_gaddr
+        "py_rsrc_gaddr", "Internal\n", py_rsrc_gaddr,
+        
+        /* AES Window Library */
+        "py_wind_create", "Internal\n", py_wind_create,
+        "py_wind_open", "Internal\n", py_wind_open,
+        "py_wind_get", "Internal\n", py_wind_get,
+        "py_wind_delete", "Internal\n", py_wind_delete,
+        "py_wind_close", "Internal\n", py_wind_close
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 8, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 13, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 
