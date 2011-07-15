@@ -24,6 +24,9 @@ GemMethods[] = {
     
     /* AES Forms Library */
     {"form_alert", py_form_alert, METH_VARARGS, "Display a GEM alert dialog"},
+    {"form_dial", py_form_dial, METH_VARARGS, "Reserves and releases screen memory"},
+    {"form_do", py_form_do, METH_VARARGS, "Processes a dialog"},
+    {"form_center", py_form_center, METH_VARARGS, "Centers an object"},
     
     /* AES Resource Library */
     {"rsrc_load", py_rsrc_load, METH_VARARGS, "Load a resource into memory"},
@@ -35,6 +38,8 @@ GemMethods[] = {
     {"wind_get", py_wind_get, METH_VARARGS, "Retrieve window information"},
     {"wind_delete", py_wind_delete, METH_VARARGS, "Delete a window (after closing...)"},
     {"wind_close", py_wind_close, METH_VARARGS, "Close a window"},
+    {"wind_set", py_wind_set, METH_VARARGS, "Set a window parameter"},
+    {"wind_update", py_wind_update, METH_VARARGS, "Lock window redraw for updates"},
     
     {NULL,NULL,0,NULL}
 };   
@@ -77,6 +82,9 @@ PROC LibFunc[] = {
         
         /* AES Forms Library */
         "py_form_alert", "Internal\n", py_form_alert,
+        "py_form_dial", "Internal\n", py_form_dial,
+        "py_form_do", "Internal\n", py_form_do,
+        "py_form_center", "Internal\n", py_form_center,
         
         /* AES Resource Library */
         "py_rsrc_load", "Internal\n", py_rsrc_load,
@@ -87,11 +95,13 @@ PROC LibFunc[] = {
         "py_wind_open", "Internal\n", py_wind_open,
         "py_wind_get", "Internal\n", py_wind_get,
         "py_wind_delete", "Internal\n", py_wind_delete,
-        "py_wind_close", "Internal\n", py_wind_close
+        "py_wind_close", "Internal\n", py_wind_close,
+        "py_wind_update", "Internal\n", py_wind_update,
+        "py_wind_set", "Internal\n", py_wind_set
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 13, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 18, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 

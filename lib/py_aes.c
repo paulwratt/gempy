@@ -47,6 +47,53 @@ int x;
     return Py_BuildValue("i",x);
 }
 
+static PyObject* __CDECL py_form_dial(PyObject *self, PyObject *args)
+{
+int id;
+int lx, ly, lw, lh;
+int bx, by, bw, bh;
+int ret;
+    
+    if(!PyArg_ParseTuple(args,"i(iiii)(iiii)",&id,&lx,&ly,&lw,&lh,&bx,&by,&bw,&bh))
+        return NULL;
+    
+    ret = form_dial(id, lx, ly, lw, lh, bx, by, bw, bh);
+    
+    if(ret == 0) {
+        PyErr_SetString(GEMError,"Form dial call failed");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject* __CDECL py_form_do(PyObject *self, PyObject *args)
+PyObject *obj;
+int x;
+int ret;
+    
+    if(!PyArg_ParseTuple(args,"Oi",&obj,&x))
+        return NULL;
+        
+    ret = form_do(PyCapsule_GetPointer(obj),x);
+    return Py_BuildValue("i",ret);
+}
+
+static PyObject* __CDECL py_form_center(PyObject *self, PyObject *args)
+PyObject *obj;
+int x,y,w,h;
+int ret;
+    
+    if(!PyArg_ParseTuple(args,"O(iiii)",&obj,&x,&y,&w,&h))
+        return NULL;
+        
+    form_center(PyCapsule_GetPointer(obj),x,y,w,h);
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 /* --- Resources Library --- */
 static PyObject* __CDECL py_rsrc_load(PyObject *self, PyObject *args)
 {
@@ -204,6 +251,81 @@ int ret;
         default:
             return Py_BuildValue("i", w1);
             break;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject* __CDECL py_wind_update(PyObject *self, PyObject *args)
+{
+int op;
+int ret;
+    
+    if(!PyArg_ParseTuple(args,"i",&op))
+        return NULL;
+    if(wind_update(op) == 0) {
+        PyErr_SetString(GEMError,"Window update failed");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject* __CDECL py_wind_set(PyObject *self, PyObject *args)
+{
+int id, sp;
+int w1, w2, w3, w4;
+int ret;
+PyObject *tple;
+    
+    if(!PyArg_ParseTuple(args,"ii|O",&id,&sp,&tpl))
+        return NULL;
+    
+    w1 = 0; w2 = 0; w3 = 0; w4 = 0;
+    
+    switch(gp) {
+        case WF_BEVENT:
+        case WF_BOTTOMALL:
+        case WF_HSLIDE:
+        case WF_HSLSIZE:
+        case WF_M_BACKDROP:
+        case WF_SHADE:
+        case WF_STACK:
+        case WF_TOPALL:
+        case WF_VSLIDE:
+        case WF_VSLSIZE:
+        case WF_WHEEL:
+            PyArg_ParseTuple(tpl,"i",&w1);
+            break;
+        case WF_COLOR:
+        case WF_INFO:
+        case WF_MENU:
+        case WF_NAME:
+        case WF_OPTS:
+            PyArg_ParseTuple(tpl,"ii",&w1,&w2);
+            break;
+        case WF_DCOLOR:
+        case WF_NEWDESK:
+            PyArg_ParseTuple(tpl,"iii",&w1,&w2,&w3);
+            break;
+        case WF_CURRXYWH:
+        case WF_DDELAY:
+        case WF_FULLXYWH:
+        case WF_ICONIFY:
+        case WF_PREVXYWH:
+        case WF_UNICONIFYXYWH:
+        case WF_WIDGETS:
+        case WF_WINXCFG:
+            PyArg_ParseTuple(tpl,"iiii",&w1,&w2,&w3,&w4);
+            break;
+    }
+    
+    ret = wind_set(id,gp,w1,w2,w3,w4);
+    if(ret == 0) {
+        PyErr_SetString(GEMError,"Window set failed");
+        return NULL;
     }
     
     Py_INCREF(Py_None);
