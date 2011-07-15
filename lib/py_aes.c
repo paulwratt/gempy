@@ -69,6 +69,7 @@ int ret;
 }
 
 static PyObject* __CDECL py_form_do(PyObject *self, PyObject *args)
+{
 PyObject *obj;
 int x;
 int ret;
@@ -81,6 +82,7 @@ int ret;
 }
 
 static PyObject* __CDECL py_form_center(PyObject *self, PyObject *args)
+{
 PyObject *obj;
 int x,y,w,h;
 int ret;
@@ -90,6 +92,37 @@ int ret;
         
     form_center(PyCapsule_GetPointer(obj),x,y,w,h);
     
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/* --- Graphics Library --- */
+static PyObject* __CDECL py_graf_handle(PyObject *self)
+{
+int wchar,hchar,wcell,hcell;
+int ret;
+    
+    ret = graf_handle(&wchar, &hchar, &wcell, &hcell);
+    return Py_BuildValue("i(iiii)",ret,wchar,hchar,wcell,hcell);
+}
+
+static PyObject* __CDECL py_graf_mouse(PyObject self, PyObject *args)
+{
+int mouse;
+
+    if(!PyArg_ParseTuple(args,"i",&mouse))
+        return NULL;
+
+    if(mouse == USER_DEF) {
+        PyErr_SetString(GEMError,"User-defined mouse pointers not currently supported");
+        return NULL;
+    }
+    
+    if(graf_mouse(mouse) == 0) {
+        PyErr_SetString(GEMError,"Mouse cursor setting failed");
+        return NULL;
+    }
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -331,3 +364,44 @@ PyObject *tple;
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+
+/* --- Event Library --- */
+static PyObject* __CDECL py_evnt_multi(PyObject self, PyObject *args)
+{
+/* Because this is possibly the ugliest call ever created in the C
+ * language, we'll use the same variable names as the docs use.
+ */
+int ev_mflags, ev_mbclicks, ev_mbmask, ev_mbstate, ev_mm1flags, ev_mm1x, ev_mm1y, ev_mm1width, ev_mm1height, ev_mm2flags;
+int ev_mm2x, ev_mm2y, ev_mm2width, ev_mm2height, ev_mmgpbuff, ev_mtlocount, ev_mthicount, ev_mmox, ev_mmoy;
+int ev_mmbutton, ev_mmokstate, ev_mkreturn, ev_mbreturn;
+
+    /* More is still needed */
+
+    ret = evnt_multi(ev_mflags, 
+                     ev_mbclicks, 
+                     ev_mbmask, 
+                     ev_mbstate, 
+                     ev_mm1flags, 
+                     ev_mm1x, 
+                     ev_mm1y, 
+                     ev_mm1width, 
+                     ev_mm1height, 
+                     ev_mm2flags, 
+                     ev_mm2x, 
+                     ev_mm2y, 
+                     ev_mm2width, 
+                     ev_mm2height, 
+                     &ev_mmgpbuff, 
+                     ev_mtlocount, 
+                     ev_mthicount, 
+                     &ev_mmox, 
+                     &ev_mmoy, 
+                     &ev_mmbutton, 
+                     &ev_mmokstate, 
+                     &ev_mkreturn, 
+                     &ev_mbreturn);
+    
+    
+}
+

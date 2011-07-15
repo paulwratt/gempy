@@ -28,6 +28,10 @@ GemMethods[] = {
     {"form_do", py_form_do, METH_VARARGS, "Processes a dialog"},
     {"form_center", py_form_center, METH_VARARGS, "Centers an object"},
     
+    /* AES Graphics Library */
+    {"graf_handle", py_graf_handle, METH_NOARGS, "Return a handle to the VDI"},
+    {"graf_mouse", py_graf_mouse, METH_VARARGS, "Sets the mouse pointer"},
+    
     /* AES Resource Library */
     {"rsrc_load", py_rsrc_load, METH_VARARGS, "Load a resource into memory"},
     {"rsrc_gaddr", py_rsrc_gaddr, METH_VARARGS, "Return an encapsulated memory address of a resource component"},
@@ -86,6 +90,10 @@ PROC LibFunc[] = {
         "py_form_do", "Internal\n", py_form_do,
         "py_form_center", "Internal\n", py_form_center,
         
+        /* AES Graphics Library */
+        "py_graf_handle", "Internal\n", py_graf_handle,
+        "py_graf_mouse", "Internal\n", py_graf_mouse,
+        
         /* AES Resource Library */
         "py_rsrc_load", "Internal\n", py_rsrc_load,
         "py_rsrc_gaddr", "Internal\n", py_rsrc_gaddr,
@@ -97,11 +105,13 @@ PROC LibFunc[] = {
         "py_wind_delete", "Internal\n", py_wind_delete,
         "py_wind_close", "Internal\n", py_wind_close,
         "py_wind_update", "Internal\n", py_wind_update,
-        "py_wind_set", "Internal\n", py_wind_set
+        "py_wind_set", "Internal\n", py_wind_set,
+        
+        NULL,NULL,NULL
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 18, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 20, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 
