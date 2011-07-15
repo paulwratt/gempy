@@ -1,5 +1,6 @@
 #include "ldg_Python.h"
 #include <gem.h>
+#include <macros.h>
 
 extern PyObject *GEMError;
 
@@ -367,7 +368,7 @@ PyObject *tple;
 
 
 /* --- Event Library --- */
-static PyObject* __CDECL py_evnt_multi(PyObject self, PyObject *args)
+static PyObject* __CDECL py_evnt_multi(PyObject self, PyObject *args, PyObject *kwargs)
 {
 /* Because this is possibly the ugliest call ever created in the C
  * language, we'll use the same variable names as the docs use.
@@ -376,8 +377,36 @@ int ev_mflags, ev_mbclicks, ev_mbmask, ev_mbstate, ev_mm1flags, ev_mm1x, ev_mm1y
 int ev_mm2x, ev_mm2y, ev_mm2width, ev_mm2height, ev_mmgpbuff, ev_mtlocount, ev_mthicount, ev_mmox, ev_mmoy;
 int ev_mmbutton, ev_mmokstate, ev_mkreturn, ev_mbreturn;
 
-    /* More is still needed */
+PyObject *mbuttons;
+PyObject *mmovement;
+long int timer;
 
+static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
+
+    mbuttons = NULL;
+    mmoverment = NULL;
+    timer = 0l;
+
+    if(!PyArg_ParseTupleAndKeywords(args, keywds, "i|OOl", kwlist,
+                                     &ev_mflags, &mbuttons, &mmovement, &timer))
+        return NULL;
+
+    /* Timer handling */
+    ev_mtlocount = loword(timer);
+    ev_mthicount = hiword(timer);
+
+    /* Mouse button handling */
+    if(mouse_buttons != NULL) {
+        PyArg_ParseTuple(mbuttons,"iii",&ev_mbclicks,&ev_mbmask,&ev_mbstate);
+    }
+    
+    /* Mouse movement handling */
+    if(mouse_movement != NULL) {
+        PyArg_ParseTuple(mmovement,"(iiiii)(iiiii)",&ev_mm1flags,&ev_mm1x,&ev_mm1y,&ev_mm1width,ev_mm1height,
+                                                        &ev_mm2flags,&ev_mm2x,&ev_mm2y,&ev_mm2width,ev_mm2height);
+    }
+
+    /* More is still needed */
     ret = evnt_multi(ev_mflags, 
                      ev_mbclicks, 
                      ev_mbmask, 
@@ -402,6 +431,8 @@ int ev_mmbutton, ev_mmokstate, ev_mkreturn, ev_mbreturn;
                      &ev_mkreturn, 
                      &ev_mbreturn);
     
-    
+    return Py_BuildValue("{s:i,s:i,s:(ii),s:(iii),s:i", "events", ret, "message", ev_mmgpbuff, 
+        "mouse_position", ev_mmox, ev_mmoy, "mouse_button", ev_mmbutton, ev_mmokstate, ev_mbreturn
+        "key", ev_mkreturn);
 }
 
