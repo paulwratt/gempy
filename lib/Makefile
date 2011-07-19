@@ -8,7 +8,7 @@ LIBS = -lgem -lldg
 
 OBJECTS = gem.o py_aes.o
 
-TARGET = _gem.slb
+TARGET = _gem.ldg
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
@@ -18,4 +18,5 @@ $(TARGET): $(OBJECTS)
 
 clean:
 	rm -f $(TARGET) $(OBJECTS)
-	
+
+all: $(TARGET)

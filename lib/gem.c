@@ -51,7 +51,7 @@ GemMethods[] = {
     {NULL,NULL,0,NULL}
 };   
  
-PyMODINIT_FUNC __CDECL initgem(void)
+PyMODINIT_FUNC __CDECL init_gem(void)
 {
 PyObject *m;
 
@@ -80,7 +80,7 @@ int i;
 
 PROC LibFunc[] = {
         "assign_pycalls", "Assigns Python callbacks", assign_pycalls,
-        "initgem", "Internal\n", initgem,
+        "init_gem", "Internal\n", init_gem,
         
         /* AES Application Library */
         "py_appl_exit", "Internal\n", py_appl_exit,
