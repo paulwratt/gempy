@@ -56,6 +56,7 @@ dl_funcptr _PyImport_GetDynLoadFunc(const char *fqname, const char *shortname,
             callbacks[8] = &Py_IncRef;
             callbacks[9] = &Py_DecRef;
             callbacks[10] = Py_None;
+            callbacks[11] = &PyArg_ParseTupleAndKeywords;
             
             assign_pycalls(callbacks);
         

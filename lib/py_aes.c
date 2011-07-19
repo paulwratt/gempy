@@ -5,7 +5,7 @@
 extern PyObject *GEMError;
 
 /* --- Application Library --- */
-static PyObject* __CDECL py_appl_init(PyObject *self, PyObject *args)
+PyObject* __CDECL py_appl_init(PyObject *self, PyObject *args)
 {
 int ret;
 
@@ -13,7 +13,7 @@ int ret;
     return Py_BuildValue("i",ret);
 }
 
-static PyObject* __CDECL py_appl_exit(PyObject *self, PyObject *args)
+PyObject* __CDECL py_appl_exit(PyObject *self, PyObject *args)
 {
 int ret;
 
@@ -21,7 +21,7 @@ int ret;
     return Py_BuildValue("i",ret);
 }
 
-static PyObject* __CDECL py_appl_write(PyObject *self, PyObject *args)
+PyObject* __CDECL py_appl_write(PyObject *self, PyObject *args)
 {
 int ret;
 int app_id;
@@ -36,7 +36,7 @@ int msg_length;
 }
 
 /* --- Forms Library --- */
-static PyObject* __CDECL py_form_alert(PyObject *self, PyObject *args)
+PyObject* __CDECL py_form_alert(PyObject *self, PyObject *args)
 {
 char *text;
 int x;
@@ -48,7 +48,7 @@ int x;
     return Py_BuildValue("i",x);
 }
 
-static PyObject* __CDECL py_form_dial(PyObject *self, PyObject *args)
+PyObject* __CDECL py_form_dial(PyObject *self, PyObject *args)
 {
 int id;
 int lx, ly, lw, lh;
@@ -69,7 +69,7 @@ int ret;
     return Py_None;
 }
 
-static PyObject* __CDECL py_form_do(PyObject *self, PyObject *args)
+PyObject* __CDECL py_form_do(PyObject *self, PyObject *args)
 {
 PyObject *obj;
 int x;
@@ -78,36 +78,36 @@ int ret;
     if(!PyArg_ParseTuple(args,"Oi",&obj,&x))
         return NULL;
         
-    ret = form_do(PyCapsule_GetPointer(obj),x);
+    ret = form_do(PyCapsule_GetPointer(obj,NULL),x);
     return Py_BuildValue("i",ret);
 }
 
-static PyObject* __CDECL py_form_center(PyObject *self, PyObject *args)
+PyObject* __CDECL py_form_center(PyObject *self, PyObject *args)
 {
 PyObject *obj;
-int x,y,w,h;
+short x,y,w,h;
 int ret;
     
-    if(!PyArg_ParseTuple(args,"O(iiii)",&obj,&x,&y,&w,&h))
+    if(!PyArg_ParseTuple(args,"O(hhhh)",&obj,&x,&y,&w,&h))
         return NULL;
         
-    form_center(PyCapsule_GetPointer(obj),x,y,w,h);
+    form_center(PyCapsule_GetPointer(obj,NULL),&x,&y,&w,&h);
     
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /* --- Graphics Library --- */
-static PyObject* __CDECL py_graf_handle(PyObject *self)
+PyObject* __CDECL py_graf_handle(PyObject *self)
 {
-int wchar,hchar,wcell,hcell;
+short wchar,hchar,wcell,hcell;
 int ret;
     
     ret = graf_handle(&wchar, &hchar, &wcell, &hcell);
-    return Py_BuildValue("i(iiii)",ret,wchar,hchar,wcell,hcell);
+    return Py_BuildValue("i(iiii)",ret,(int)wchar,(int)hchar,(int)wcell,(int)hcell);
 }
 
-static PyObject* __CDECL py_graf_mouse(PyObject self, PyObject *args)
+PyObject* __CDECL py_graf_mouse(PyObject self, PyObject *args)
 {
 int mouse;
 
@@ -119,7 +119,7 @@ int mouse;
         return NULL;
     }
     
-    if(graf_mouse(mouse) == 0) {
+    if(graf_mouse(mouse,NULL) == 0) {
         PyErr_SetString(GEMError,"Mouse cursor setting failed");
         return NULL;
     }
@@ -129,7 +129,7 @@ int mouse;
 }
 
 /* --- Resources Library --- */
-static PyObject* __CDECL py_rsrc_load(PyObject *self, PyObject *args)
+PyObject* __CDECL py_rsrc_load(PyObject *self, PyObject *args)
 {
 char *file;
 int x;
@@ -146,7 +146,7 @@ int x;
     return Py_None;
 }
 
-static PyObject* __CDECL py_rsrc_gaddr(PyObject *self, PyObject *args)
+PyObject* __CDECL py_rsrc_gaddr(PyObject *self, PyObject *args)
 {
 char *file;
 int type, index;
@@ -164,7 +164,7 @@ void *gaddr;
 }
 
 /* --- Windows Library --- */
-static PyObject* __CDECL py_wind_create(PyObject *self, PyObject *args)
+PyObject* __CDECL py_wind_create(PyObject *self, PyObject *args)
 {
 int type, x, y, w, h;
 int ret;
@@ -175,7 +175,7 @@ int ret;
     return Py_BuildValue("i",wind_create(type,x,y,w,h));
 }
 
-static PyObject* __CDECL py_wind_close(PyObject *self, PyObject *args)
+PyObject* __CDECL py_wind_close(PyObject *self, PyObject *args)
 {
 int id;
     
@@ -191,7 +191,7 @@ int id;
     return Py_None;
 }
 
-static PyObject* __CDECL py_wind_delete(PyObject *self, PyObject *args)
+PyObject* __CDECL py_wind_delete(PyObject *self, PyObject *args)
 {
 int id;
     
@@ -207,7 +207,7 @@ int id;
     return Py_None;
 }
 
-static PyObject* __CDECL py_wind_open(PyObject *self, PyObject *args)
+PyObject* __CDECL py_wind_open(PyObject *self, PyObject *args)
 {
 int id, x, y, w, h;
 int ret;
@@ -215,7 +215,7 @@ int ret;
     if(!PyArg_ParseTuple(args,"i(iiii)",&id,&x,&y,&w,&h))
         return NULL;
         
-    ret = wind_open(type,x,y,w,h);
+    ret = wind_open(id,x,y,w,h);
     if(ret == 0) {
         PyErr_SetString(GEMError,"Window could not be opened");
         return NULL;
@@ -225,16 +225,23 @@ int ret;
     return Py_None;
 }
 
-static PyObject* __CDECL py_wind_get(PyObject *self, PyObject *args)
+PyObject* __CDECL py_wind_get(PyObject *self, PyObject *args)
 {
 int id, gp;
+short p1, p2, p3, p4;
 int w1, w2, w3, w4;
 int ret;
     
     if(!PyArg_ParseTuple(args,"ii",&id,&gp))
         return NULL;
         
-    ret = wind_get(id,gp,&w1,&w2,&w3,&w4);
+    ret = wind_get(id,gp,&p1,&p2,&p3,&p4);
+    
+    w1 = (int)p1;
+    w2 = (int)p2;
+    w3 = (int)p3;
+    w4 = (int)p4;
+    
     if(ret == 0) {
         PyErr_SetString(GEMError,"Window request failed");
         return NULL;
@@ -256,7 +263,7 @@ int ret;
         case WF_FULLXYWH:
         case WF_FTOOLBAR:
         case WF_FIRSTXYWH:
-        case WF_DDELAY:
+        /* case WF_DDELAY: */
         case WF_CURRXYWH:
             return Py_BuildValue("(iiii)", w1, w2, w3, w4);
             break;
@@ -270,9 +277,10 @@ int ret;
         case WF_M_WINDLIST:
             return Py_BuildValue("(ii)", w1, w2);
             break;
-        case XA:
-            return Py_BuildValue("ii", ret, w1);
-            break;
+        /* case XA:
+         *   return Py_BuildValue("ii", ret, w1);
+         *   break;
+         */
         case WF_BEVENT:
         case WF_BOTTOM:
         case WF_HSLIDE:
@@ -291,7 +299,7 @@ int ret;
     return Py_None;
 }
 
-static PyObject* __CDECL py_wind_update(PyObject *self, PyObject *args)
+PyObject* __CDECL py_wind_update(PyObject *self, PyObject *args)
 {
 int op;
 int ret;
@@ -307,19 +315,19 @@ int ret;
     return Py_None;
 }
 
-static PyObject* __CDECL py_wind_set(PyObject *self, PyObject *args)
+PyObject* __CDECL py_wind_set(PyObject *self, PyObject *args)
 {
 int id, sp;
 int w1, w2, w3, w4;
 int ret;
-PyObject *tple;
+PyObject *tpl;
     
     if(!PyArg_ParseTuple(args,"ii|O",&id,&sp,&tpl))
         return NULL;
     
     w1 = 0; w2 = 0; w3 = 0; w4 = 0;
     
-    switch(gp) {
+    switch(sp) {
         case WF_BEVENT:
         case WF_BOTTOMALL:
         case WF_HSLIDE:
@@ -345,7 +353,7 @@ PyObject *tple;
             PyArg_ParseTuple(tpl,"iii",&w1,&w2,&w3);
             break;
         case WF_CURRXYWH:
-        case WF_DDELAY:
+        /* case WF_DDELAY: */
         case WF_FULLXYWH:
         case WF_ICONIFY:
         case WF_PREVXYWH:
@@ -356,7 +364,7 @@ PyObject *tple;
             break;
     }
     
-    ret = wind_set(id,gp,w1,w2,w3,w4);
+    ret = wind_set(id,sp,w1,w2,w3,w4);
     if(ret == 0) {
         PyErr_SetString(GEMError,"Window set failed");
         return NULL;
@@ -368,14 +376,18 @@ PyObject *tple;
 
 
 /* --- Event Library --- */
-static PyObject* __CDECL py_evnt_multi(PyObject self, PyObject *args, PyObject *kwargs)
+PyObject* __CDECL py_evnt_multi(PyObject self, PyObject *args, PyObject *kwargs)
 {
 /* Because this is possibly the ugliest call ever created in the C
  * language, we'll use the same variable names as the docs use.
  */
 int ev_mflags, ev_mbclicks, ev_mbmask, ev_mbstate, ev_mm1flags, ev_mm1x, ev_mm1y, ev_mm1width, ev_mm1height, ev_mm2flags;
-int ev_mm2x, ev_mm2y, ev_mm2width, ev_mm2height, ev_mmgpbuff, ev_mtlocount, ev_mthicount, ev_mmox, ev_mmoy;
+int ev_mm2x, ev_mm2y, ev_mm2width, ev_mm2height, ev_mtlocount, ev_mthicount, ev_mmox, ev_mmoy;
 int ev_mmbutton, ev_mmokstate, ev_mkreturn, ev_mbreturn;
+
+int message[8];
+
+int ret;
 
 PyObject *mbuttons;
 PyObject *mmovement;
@@ -384,10 +396,10 @@ long int timer;
 static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
 
     mbuttons = NULL;
-    mmoverment = NULL;
+    mmovement = NULL;
     timer = 0l;
 
-    if(!PyArg_ParseTupleAndKeywords(args, keywds, "i|OOl", kwlist,
+    if(!PyArg_ParseTupleAndKeywords(args, kwargs, "i|OOl", kwlist,
                                      &ev_mflags, &mbuttons, &mmovement, &timer))
         return NULL;
 
@@ -396,12 +408,12 @@ static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
     ev_mthicount = hiword(timer);
 
     /* Mouse button handling */
-    if(mouse_buttons != NULL) {
+    if(mbuttons != NULL) {
         PyArg_ParseTuple(mbuttons,"iii",&ev_mbclicks,&ev_mbmask,&ev_mbstate);
     }
     
     /* Mouse movement handling */
-    if(mouse_movement != NULL) {
+    if(mmovement != NULL) {
         PyArg_ParseTuple(mmovement,"(iiiii)(iiiii)",&ev_mm1flags,&ev_mm1x,&ev_mm1y,&ev_mm1width,ev_mm1height,
                                                         &ev_mm2flags,&ev_mm2x,&ev_mm2y,&ev_mm2width,ev_mm2height);
     }
@@ -421,18 +433,18 @@ static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
                      ev_mm2y, 
                      ev_mm2width, 
                      ev_mm2height, 
-                     &ev_mmgpbuff, 
+                     message, 
                      ev_mtlocount, 
                      ev_mthicount, 
                      &ev_mmox, 
                      &ev_mmoy, 
                      &ev_mmbutton, 
                      &ev_mmokstate, 
-                     &ev_mkreturn, 
+                     /* &ev_mkreturn, */
                      &ev_mbreturn);
     
-    return Py_BuildValue("{s:i,s:i,s:(ii),s:(iii),s:i", "events", ret, "message", ev_mmgpbuff, 
-        "mouse_position", ev_mmox, ev_mmoy, "mouse_button", ev_mmbutton, ev_mmokstate, ev_mbreturn
+    return Py_BuildValue("{s:i,s:i,s:(ii),s:(iii),s:i}", "events", ret, "message", message, 
+        "mouse_position", ev_mmox, ev_mmoy, "mouse_button", ev_mmbutton, ev_mmokstate, ev_mbreturn,
         "key", ev_mkreturn);
 }
 

@@ -1,7 +1,11 @@
 
 /* Need to define an internal flag to avoid an extern */
 #define LDG_INTERNAL
+
 #include "ldg_Python.h"
+
+/* --- Python-C API Calls --- */
+//static 
 
 #include <gem.h>
 #include <ldg.h>
@@ -9,10 +13,7 @@
 #include "py_aes.h"
 
 /* --- A GEM exception --- */
-static PyObject *GEMError;
-
-/* --- Python-C API Calls --- */
-static void *pycallbacks[PY_API_FCOUNT];
+ 
 
 /* --- Python API Bookkeeping --- */
 static PyMethodDef 
