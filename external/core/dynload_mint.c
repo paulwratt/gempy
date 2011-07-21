@@ -4,7 +4,7 @@
 #include "importdl.h"
 #include <ldg.h>
 
-#define PY_API_FCOUNT   3
+#define PY_API_FCOUNT   12
 
 const struct filedescr _PyImport_DynLoadFiletab[] = {
     {".ldg", "rb", C_EXTENSION},
