@@ -22,6 +22,7 @@ GemMethods[] = {
     {"appl_init", py_appl_init, METH_VARARGS, "Initialize a GEM application"},
     {"appl_exit", py_appl_exit, METH_VARARGS, "Exit a GEM application"},
     {"appl_write", py_appl_write, METH_VARARGS, "Send a message to a GEM application"},
+    {"appl_read", py_appl_read, METH_VARARGS, "Retrieve message data from a GEM application"},
     
     /* AES Forms Library */
     {"form_alert", py_form_alert, METH_VARARGS, "Display a GEM alert dialog"},
@@ -46,7 +47,7 @@ GemMethods[] = {
     {"wind_set", py_wind_set, METH_VARARGS, "Set a window parameter"},
     {"wind_update", py_wind_update, METH_VARARGS, "Lock window redraw for updates"},
     
-    {"evnt_multi", py_evnt_multi, METH_KEYWORDS | METH_VARARGS, "Process multiple GEM events."},
+    {"evnt_multi", py_evnt_multi, METH_VARARGS, "Process multiple GEM events."},
     
     {NULL,NULL,0,NULL}
 };   
@@ -86,6 +87,7 @@ PROC LibFunc[] = {
         "py_appl_exit", "Internal\n", py_appl_exit,
         "py_appl_init", "Internal\n", py_appl_init,
         "py_appl_write", "Internal\n", py_appl_write,
+        "py_appl_read", "Internal\n", py_appl_read,
         
         /* AES Forms Library */
         "py_form_alert", "Internal\n", py_form_alert,
@@ -117,7 +119,7 @@ PROC LibFunc[] = {
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 21, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 22, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 

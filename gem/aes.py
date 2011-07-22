@@ -14,7 +14,7 @@ def alert(message,type=None,buttons=('Ok',),default=None):
     alert_types = ['none', 'exclamation', 'question',
                    'stop', 'info', 'disk', 'bomb']
     try:
-        internal_type = alert_type.index(type.lower())
+        internal_type = alert_types.index(type.lower())
     except ValueError:
         raise GEMError('Unknown alert box type')
     except AttributeError:
@@ -121,6 +121,25 @@ class MessageEvent(Event):
         Event.__init__(self)
 
         self.message = None
+        self.sender_id = None
+        self.extended_data = None
+        self.raw_message = None
+    
+    def get_word(self,index):
+        """Retrieves a word from the raw message array"""
+        if index > 7:
+            raise ValueError('Message index must be between 0 and (including) 7.')
+        return int(self.raw_message[index]) + int(self.raw_message[index+1])
+    
+    def process(self):
+        self.message = self.get_word(0)
+        self.sender_id = self.get_word(1)
+        
+        extended_data_length = self.get_word(2)
+        if extended_data_length > 0:
+            self.extended_data = _gem.appl_read(self.sender_id,extended_data_length)
+        else:
+            self.extended_data = None
 
 class Application:
 
@@ -143,6 +162,14 @@ class Application:
         
     def destroy(self):
         """Destroys the application"""
+        window_update(BEG_UPDATE)
+        for w in self.windows:
+            try:
+                w.close()
+                w.destroy()
+            except:
+                pass
+        window_update(END_UPDATE)
         _gem.appl_exit(self.id)
         
     def load_resource(self,file):
@@ -160,8 +187,27 @@ class Application:
         if not self.resource:
             raise GEMError("A resource has not yet be loaded")
             
-        return _gem.rsrc.gaddr(type,index)
+        return _gem.rsrc.gaddr(type, index)
         
+    def new_window(self, rect, name=None):
+        """Opens an application-managed window"""
+        w = Window()
+        w.begin_update()
+        w.open(rect)
+        if name is not None:
+            w.set_name(name)
+        w.end_update()
+        
+        self.windows.append(w)
+        return w
+        
+    def close_window(self,w):
+        """Closes an application-managed window"""
+        if w in self.windows:
+            self.windows.remove(w)
+            w.close()
+            w.destroy()
+            
     def event_loop(self):
         """Executes the GEM event loop, watching for events specified
         by the event attributes of the Application object."""
@@ -199,7 +245,10 @@ class Application:
             ret = _gem.evnt_multi(events,**kwdict)
             
             if ret['events'] & MU_MESAG:
-                self.message_event.message = ret['message']
+                if type(ret['message']) is str:
+                    self.message_event.raw_message = bytearray(ret['message'])
+                else:
+                    self.message_event.raw_message = ret['message']
                 self.message_event.process()
                 
             if ret['events'] & MU_BUTTON:

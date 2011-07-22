@@ -35,6 +35,40 @@ int msg_length;
     return Py_BuildValue("i",ret);
 }
 
+PyObject* __CDECL py_appl_read(PyObject *self, PyObject *args)
+{
+int ret;
+int app_id;
+char *message;
+int msg_length;
+PyObject *ret_obj;
+    
+    if(!PyArg_ParseTuple(args,"ii",&app_id,&msg_length))
+        return NULL;
+    
+    if(msg_length <= 0) {
+        PyErr_SetString(GEMError,"Data length of zero requested in appl_read");
+        return NULL;
+    }
+    
+    message = (char *)malloc(msg_length*sizeof(char));
+    ret = appl_read(app_id,msg_length,message);
+    
+    if(ret == 0) {
+        PyErr_SetString(GEMError,"Application read request failed");
+        return NULL;
+    }
+    
+#ifdef PYTHON_3_API
+    ret_obj = Py_BuildValue("y#",ret_obj,msg_length);
+#else
+    ret_obj = Py_BuildValue("s#",ret_obj,msg_length);
+#endif
+
+    free(message);
+    return ret_obj;
+}
+
 /* --- Forms Library --- */
 PyObject* __CDECL py_form_alert(PyObject *self, PyObject *args)
 {
@@ -378,6 +412,11 @@ PyObject *tpl;
 /* --- Event Library --- */
 PyObject* __CDECL py_evnt_multi(PyObject self, PyObject *args, PyObject *kwargs)
 {
+
+EVMULT_IN em_in;
+EVMULT_OUT em_out;
+
+
 /* Because this is possibly the ugliest call ever created in the C
  * language, we'll use the same variable names as the docs use.
  */
@@ -385,7 +424,7 @@ int ev_mflags, ev_mbclicks, ev_mbmask, ev_mbstate, ev_mm1flags, ev_mm1x, ev_mm1y
 int ev_mm2x, ev_mm2y, ev_mm2width, ev_mm2height, ev_mtlocount, ev_mthicount, ev_mmox, ev_mmoy;
 int ev_mmbutton, ev_mmokstate, ev_mkreturn, ev_mbreturn;
 
-int message[8];
+static char message[16];
 
 int ret;
 
@@ -399,52 +438,57 @@ static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
     mmovement = NULL;
     timer = 0l;
 
-    if(!PyArg_ParseTupleAndKeywords(args, kwargs, "i|OOl", kwlist,
-                                     &ev_mflags, &mbuttons, &mmovement, &timer))
-        return NULL;
 
+    form_alert(0,"[3][Start evnt_multi][Ok]");
+    //if(!PyArg_ParseTupleAndKeywords(args, kwargs, "i|OOl", kwlist,
+    //                                 &ev_mflags, &mbuttons, &mmovement, &timer))
+    if(!PyArg_ParseTuple(args,"i",&ev_mflags))
+        return NULL;
+        
+    form_alert(0,"[3][Args parsed][Ok]");
+    em_in.emi_flags = ev_mflags;
+    
     /* Timer handling */
-    ev_mtlocount = loword(timer);
-    ev_mthicount = hiword(timer);
+    em_in.emi_tlow = loword(timer);
+    em_in.emi_thigh = hiword(timer);
 
     /* Mouse button handling */
     if(mbuttons != NULL) {
         PyArg_ParseTuple(mbuttons,"iii",&ev_mbclicks,&ev_mbmask,&ev_mbstate);
+        em_in.emi_bclicks = (short)ev_mbclicks;
+        em_in.emi_bmask = (short)ev_mbmask;
+        em_in.emi_bstate = (short)ev_mbstate;
     }
     
     /* Mouse movement handling */
     if(mmovement != NULL) {
         PyArg_ParseTuple(mmovement,"(iiiii)(iiiii)",&ev_mm1flags,&ev_mm1x,&ev_mm1y,&ev_mm1width,ev_mm1height,
                                                         &ev_mm2flags,&ev_mm2x,&ev_mm2y,&ev_mm2width,ev_mm2height);
+        em_in.emi_m1leave = (short)ev_mm1flags;
+        em_in.emi_m1.g_x = (short)ev_mm1x;
+        em_in.emi_m1.g_y = (short)ev_mm1y;
+        em_in.emi_m1.g_w = (short)ev_mm1width;
+        em_in.emi_m1.g_h = (short)ev_mm1height;
+        
+        em_in.emi_m2leave = (short)ev_mm2flags;
+        em_in.emi_m2.g_x = (short)ev_mm2x;
+        em_in.emi_m2.g_y = (short)ev_mm2y;
+        em_in.emi_m2.g_w = (short)ev_mm2width;
+        em_in.emi_m2.g_h = (short)ev_mm2height;
     }
 
-    /* More is still needed */
-    ret = evnt_multi(ev_mflags, 
-                     ev_mbclicks, 
-                     ev_mbmask, 
-                     ev_mbstate, 
-                     ev_mm1flags, 
-                     ev_mm1x, 
-                     ev_mm1y, 
-                     ev_mm1width, 
-                     ev_mm1height, 
-                     ev_mm2flags, 
-                     ev_mm2x, 
-                     ev_mm2y, 
-                     ev_mm2width, 
-                     ev_mm2height, 
-                     message, 
-                     ev_mtlocount, 
-                     ev_mthicount, 
-                     &ev_mmox, 
-                     &ev_mmoy, 
-                     &ev_mmbutton, 
-                     &ev_mmokstate, 
-                     /* &ev_mkreturn, */
-                     &ev_mbreturn);
-    
-    return Py_BuildValue("{s:i,s:i,s:(ii),s:(iii),s:i}", "events", ret, "message", message, 
-        "mouse_position", ev_mmox, ev_mmoy, "mouse_button", ev_mmbutton, ev_mmokstate, ev_mbreturn,
-        "key", ev_mkreturn);
+    /* Use the not-so-portable fast multi call */
+    ret = evnt_multi_fast(&em_in, message, &em_out);
+    form_alert(0,"[3][Args parsed][Ok]");
+//#ifdef PYTHON_3_API
+    //return Py_BuildValue("{s:i,s:y#,s:(ii),s:(ii),s:(ii)}", 
+//#else
+    return Py_BuildValue("{s:i,s:s#,s:(ii),s:(ii),s:(ii)}", 
+//#endif
+                            "events", ret, 
+                            "message", message, 16, 
+                            "mouse_position", (int)em_out.emo_mouse.p_x, (int)em_out.emo_mouse.p_y, 
+                            "mouse_button", (int)em_out.emo_mbutton, (int)em_out.emo_mclicks,
+                            "key", (int)em_out.emo_kreturn,(int)em_out.emo_kmeta);
 }
 
