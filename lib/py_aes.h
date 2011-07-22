@@ -25,8 +25,9 @@
  PyObject* __CDECL py_wind_delete(PyObject *self, PyObject *args);
  PyObject* __CDECL py_wind_close(PyObject *self, PyObject *args);
  PyObject* __CDECL py_wind_set(PyObject *self, PyObject *args);
+ PyObject* __CDECL py_wind_set_string(PyObject *self, PyObject *args);
  PyObject* __CDECL py_wind_update(PyObject *self, PyObject *args);
 
- PyObject* __CDECL py_evnt_multi(PyObject self, PyObject *args);
+ PyObject* __CDECL py_evnt_multi(PyObject *self, PyObject *args, PyObject *kwargs);
 
 #endif /* __PY_AES_HEADERS */

@@ -1,4 +1,6 @@
 
+from messages import *
+
 # Window Constants
 NAME =	   0x0001 	    # Title-bar
 CLOSER =   0x0002 	    # Close-box

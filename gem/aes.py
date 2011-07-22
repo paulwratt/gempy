@@ -1,3 +1,5 @@
+import struct
+
 import _gem
 
 from error import GEMError
@@ -54,9 +56,10 @@ def window_update(action):
 class Window:
     """A class wrapping GEM windows and their functionality"""
     
-    def __init__(self, type=NAME|FULLER|CLOSER|SIZER):
+    def __init__(self, type=NAME|FULLER|MOVER|CLOSER|SIZER):
         """Creates (but does not show) a window"""
         self.id = _gem.wind_create(type,(0,0,10,10))
+        self.name = None
     
     def open(self,rect):
         """Opens a window using the the specified rectangle (x,y,w,h)"""
@@ -69,10 +72,20 @@ class Window:
     def destroy(self):
         """Deletes an existing GEM window"""
         _gem.wind_delete(self.id)
-        
+    
+    def resize(self,rect):
+        """Resizes/moves a window"""
+        _gem.wind_set(self.id,WF_CURRXYWH,rect)
+    
+    def top(self):
+        """Sets the current window to topmost"""
+        _gem.wind_set(self.id,WF_TOP,(self.id,0,0,0))
+        print "Topped!"
+    
     def set_name(self,name):
         """Sets the name of a window"""
-        _gem.wind_set(self.id,WF_NAME,name)
+        _gem.wind_set_string(self.id,WF_NAME,name)
+        self.name = name
         
     def begin_update(self):
         window_update(BEG_UPDATE)
@@ -129,17 +142,22 @@ class MessageEvent(Event):
         """Retrieves a word from the raw message array"""
         if index > 7:
             raise ValueError('Message index must be between 0 and (including) 7.')
-        return int(self.raw_message[index]) + int(self.raw_message[index+1])
-    
+        try:
+            ret = struct.unpack_from("@h",self.raw_message,offset=index*2)
+        except SystemError:
+            print 'Warning: SystemError on struct.unpack_from in get_word()'
+            return 0
+        return ret[0]
+        
     def process(self):
         self.message = self.get_word(0)
         self.sender_id = self.get_word(1)
         
         extended_data_length = self.get_word(2)
-        if extended_data_length > 0:
-            self.extended_data = _gem.appl_read(self.sender_id,extended_data_length)
-        else:
-            self.extended_data = None
+        #if extended_data_length > 0:
+        #    self.extended_data = _gem.appl_read(self.sender_id,extended_data_length)
+        #else:
+        #    self.extended_data = None
 
 class Application:
 
@@ -193,9 +211,9 @@ class Application:
         """Opens an application-managed window"""
         w = Window()
         w.begin_update()
-        w.open(rect)
         if name is not None:
             w.set_name(name)
+        w.open(rect)
         w.end_update()
         
         self.windows.append(w)
@@ -245,10 +263,10 @@ class Application:
             ret = _gem.evnt_multi(events,**kwdict)
             
             if ret['events'] & MU_MESAG:
-                if type(ret['message']) is str:
-                    self.message_event.raw_message = bytearray(ret['message'])
-                else:
-                    self.message_event.raw_message = ret['message']
+                #if type(ret['message']) is str:
+                #    self.message_event.raw_message = bytearray(ret['message'])
+                #else:
+                self.message_event.raw_message = ret['message']
                 self.message_event.process()
                 
             if ret['events'] & MU_BUTTON:

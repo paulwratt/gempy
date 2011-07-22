@@ -4,7 +4,7 @@
 #include "importdl.h"
 #include <ldg.h>
 
-#define PY_API_FCOUNT   12
+#define PY_API_FCOUNT   14
 
 const struct filedescr _PyImport_DynLoadFiletab[] = {
     {".ldg", "rb", C_EXTENSION},
@@ -57,6 +57,8 @@ dl_funcptr _PyImport_GetDynLoadFunc(const char *fqname, const char *shortname,
             callbacks[9] = &Py_DecRef;
             callbacks[10] = Py_None;
             callbacks[11] = &PyArg_ParseTupleAndKeywords;
+            callbacks[12] = &PyString_Type;
+            callbacks[13] = &PyString_AsString;
             
             assign_pycalls(callbacks);
         

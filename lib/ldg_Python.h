@@ -4,7 +4,7 @@
 #include <Python.h>
 #include <ldg.h>
 
-#define PY_API_FCOUNT   12
+#define PY_API_FCOUNT   14
 
 #ifndef LDG_INTERNAL
 extern void *pycallbacks[PY_API_FCOUNT];
@@ -26,6 +26,9 @@ PyObject *GEMError;
 #define Py_DecRef(obj)                  ldg_callback(pycallbacks[9],obj)
 #define Py_None                         ((PyObject *)pycallbacks[10])
 #define PyArg_ParseTupleAndKeywords(tpl,...)     ldg_callback(pycallbacks[11],tpl,##__VA_ARGS__)
+#define PyString_Check(obj)             (Py_TYPE(obj) == pycallbacks[12])
+#define PyString_AsString(obj)          (const char *)ldg_callback(pycallbacks[13],obj)
+
 
 #define Py_INCREF(obj)                  ldg_callback(pycallbacks[8],obj)
 #define Py_DECREF(obj)                  ldg_callback(pycallbacks[9],obj)

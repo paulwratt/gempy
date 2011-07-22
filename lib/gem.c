@@ -45,9 +45,10 @@ GemMethods[] = {
     {"wind_delete", py_wind_delete, METH_VARARGS, "Delete a window (after closing...)"},
     {"wind_close", py_wind_close, METH_VARARGS, "Close a window"},
     {"wind_set", py_wind_set, METH_VARARGS, "Set a window parameter"},
+    {"wind_set_string", py_wind_set_string, METH_VARARGS, "Set a string window parameter"},
     {"wind_update", py_wind_update, METH_VARARGS, "Lock window redraw for updates"},
     
-    {"evnt_multi", py_evnt_multi, METH_VARARGS, "Process multiple GEM events."},
+    {"evnt_multi", py_evnt_multi, METH_VARARGS | METH_KEYWORDS, "Process multiple GEM events."},
     
     {NULL,NULL,0,NULL}
 };   
@@ -111,6 +112,7 @@ PROC LibFunc[] = {
         "py_wind_close", "Internal\n", py_wind_close,
         "py_wind_update", "Internal\n", py_wind_update,
         "py_wind_set", "Internal\n", py_wind_set,
+        "py_wind_set_string", "Internal\n", py_wind_set_string,
         
         /* AES Event Library */
         "py_evnt_multi", "Internal\n", py_evnt_multi,
@@ -119,7 +121,7 @@ PROC LibFunc[] = {
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 22, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 23, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 

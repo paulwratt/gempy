@@ -12,14 +12,21 @@ class AppMessageEvent(gem.MessageEvent):
         # First call the super's process()
         gem.MessageEvent.process(self)
         
-        if self.message == WM_CLOSED:
-            app.event_processing = False
+        if self.message == gem.WM_CLOSED:
+            self.app.event_processing = False
+        
+        elif self.message == gem.WM_TOPPED:
+            self.window.top()
+            
+        elif self.message == gem.WM_MOVED or self.message == gem.WM_SIZED:
+            rect = (self.get_word(4),self.get_word(5),self.get_word(6),self.get_word(7))
+            self.window.resize(rect)
 
 def start_app():
 
     app = gem.Application()
-    
-    w = app.new_window((60,60,500,300))
+
+    w = app.new_window((60,60,500,300),'Awesome!')
     
     app.message_event = AppMessageEvent(app)
     

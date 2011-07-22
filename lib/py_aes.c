@@ -349,13 +349,28 @@ int ret;
     return Py_None;
 }
 
+PyObject* __CDECL py_wind_set_string(PyObject *self, PyObject *args)
+{
+int id, sp;
+char *str;
+short w1, w2;
+
+    if(!PyArg_ParseTuple(args,"iiz",&id,&sp,&str))
+        return NULL;
+
+    wind_set_str(id,sp,str);
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 PyObject* __CDECL py_wind_set(PyObject *self, PyObject *args)
 {
 int id, sp;
 int w1, w2, w3, w4;
 int ret;
 PyObject *tpl;
-    
+
     if(!PyArg_ParseTuple(args,"ii|O",&id,&sp,&tpl))
         return NULL;
     
@@ -410,7 +425,7 @@ PyObject *tpl;
 
 
 /* --- Event Library --- */
-PyObject* __CDECL py_evnt_multi(PyObject self, PyObject *args, PyObject *kwargs)
+PyObject* __CDECL py_evnt_multi(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 
 EVMULT_IN em_in;
@@ -438,15 +453,13 @@ static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
     mmovement = NULL;
     timer = 0l;
 
-
-    form_alert(0,"[3][Start evnt_multi][Ok]");
-    //if(!PyArg_ParseTupleAndKeywords(args, kwargs, "i|OOl", kwlist,
-    //                                 &ev_mflags, &mbuttons, &mmovement, &timer))
-    if(!PyArg_ParseTuple(args,"i",&ev_mflags))
+    if(!PyArg_ParseTupleAndKeywords(args, kwargs, "i|OOl", kwlist,
+                                     &ev_mflags, &mbuttons, &mmovement, &timer))
+    //if(!PyArg_ParseTuple(args,"i",&ev_mflags))
         return NULL;
-        
-    form_alert(0,"[3][Args parsed][Ok]");
-    em_in.emi_flags = ev_mflags;
+            
+    //form_alert(0,"[3][Args parsed][Ok]");
+    em_in.emi_flags = (short)ev_mflags;
     
     /* Timer handling */
     em_in.emi_tlow = loword(timer);
@@ -462,7 +475,7 @@ static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
     
     /* Mouse movement handling */
     if(mmovement != NULL) {
-        PyArg_ParseTuple(mmovement,"(iiiii)(iiiii)",&ev_mm1flags,&ev_mm1x,&ev_mm1y,&ev_mm1width,ev_mm1height,
+        PyArg_ParseTuple(mmovement,"iiiiiiiiii)",&ev_mm1flags,&ev_mm1x,&ev_mm1y,&ev_mm1width,ev_mm1height,
                                                         &ev_mm2flags,&ev_mm2x,&ev_mm2y,&ev_mm2width,ev_mm2height);
         em_in.emi_m1leave = (short)ev_mm1flags;
         em_in.emi_m1.g_x = (short)ev_mm1x;
@@ -479,7 +492,7 @@ static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
 
     /* Use the not-so-portable fast multi call */
     ret = evnt_multi_fast(&em_in, message, &em_out);
-    form_alert(0,"[3][Args parsed][Ok]");
+    //form_alert(0,"[3][Args parsed][Ok]");
 //#ifdef PYTHON_3_API
     //return Py_BuildValue("{s:i,s:y#,s:(ii),s:(ii),s:(ii)}", 
 //#else
