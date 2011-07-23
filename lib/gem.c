@@ -11,6 +11,7 @@
 #include <ldg.h>
 
 #include "py_aes.h"
+#include "py_vdi.h"
 
 /* --- A GEM exception --- */
  
@@ -49,6 +50,14 @@ GemMethods[] = {
     {"wind_update", py_wind_update, METH_VARARGS, "Lock window redraw for updates"},
     
     {"evnt_multi", py_evnt_multi, METH_VARARGS | METH_KEYWORDS, "Process multiple GEM events."},
+
+    /* VDI Functions */
+    {"v_open_screen", py_v_open_screen, METH_NOARGS, "Open and retrieve a handle to a virtual screen workstation"},
+    {"v_clsvwk", py_v_clsvwk, METH_VARARGS, "Close a virtual workstation"},
+    {"v_bar", py_v_bar, METH_VARARGS, "Draw a filled rectangle"},
+    {"v_ellipse", py_v_ellipse, METH_VARARGS, "Draw an ellipse"},
+    {"vsf_color", py_vsf_color, METH_VARARGS, "Select the fill color index"},
+    {"vs_clip", py_vs_clip, METH_VARARGS, "Set VDI clipping region"},
     
     {NULL,NULL,0,NULL}
 };   
@@ -117,11 +126,19 @@ PROC LibFunc[] = {
         /* AES Event Library */
         "py_evnt_multi", "Internal\n", py_evnt_multi,
         
+        /* VDI Functions */
+        "py_v_open_screen", "Internal\n", py_v_open_screen,
+        "py_v_clsvwk", "Internal\n", py_v_clsvwk,
+        "py_v_bar", "Internal\n", py_v_bar,
+        "py_v_ellipse", "Internal\n", py_v_ellipse,
+        "py_vsf_color", "Internal\n", py_vsf_color,
+        "py_vs_clip", "Internal\n", py_vs_clip,
+        
         NULL,NULL,NULL
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 23, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 29, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 
