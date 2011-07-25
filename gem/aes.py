@@ -72,6 +72,7 @@ class Window:
     def destroy(self):
         """Deletes an existing GEM window"""
         _gem.wind_delete(self.id)
+        self.id = None
     
     def resize(self,rect):
         """Resizes/moves a window"""
@@ -80,7 +81,6 @@ class Window:
     def top(self):
         """Sets the current window to topmost"""
         _gem.wind_set(self.id,WF_TOP,(self.id,0,0,0))
-        print "Topped!"
     
     def set_name(self,name):
         """Sets the name of a window"""
@@ -92,6 +92,43 @@ class Window:
     
     def end_update(self):
         window_update(END_UPDATE)
+
+    def get_size(self):
+        """Returns the window position and size"""
+        return _gem.wind_get(self.id,WF_CURRXYWH)
+
+    def get_work_rect(self):
+        """Returns this window's current work area rectangle"""
+        return _gem.wind_get(self.id,WF_WORKXYWH)
+        
+    def get_invalid_rectangles(self):
+        """Returns a list of rectangles requiring redrawing"""
+        rects = []
+        r = _gem.wind_get(self.id,WF_FIRSTXYWH)
+        while r[2] > 0 or r[3] > 0:
+            rects.append(r)
+            r = _gem.wind_get(self.id,WF_NEXTXYWH)
+        
+        return rects
+        
+    def intersect_work_area(self,rect):
+        """Returns the intersecting region of a rectangle and the window's workspace"""
+        wrect = self.get_work_rect()
+
+        tw = min(wrect[0]+wrect[2], rect[0]+rect[2])
+        th = min(wrect[1]+wrect[3], rect[1]+rect[3])
+        tx = max(wrect[0], rect[0])
+        ty = max(wrect[1], rect[1])
+        
+        if (tw > tx) and (th > ty):
+            return (tx, ty, tw-tx, th-ty)
+        else:
+            return None
+            
+    def graphics_handle(self):
+        """Returns a VDI handle to the screen"""
+        vh,ignore = _gem.graf_handle()
+        return vh
 
 class Event:
     def __init__(self):
@@ -198,14 +235,35 @@ class Application:
         except:
             self.resource = False
             raise GEMError("Could not load the resource file {0}".format(file))
+            
+    def get_resource_item(self,type,index):
+        """Returns a capsule containing a resource item"""
+        return _gem.rsrc_gaddr(type,index)
+    
+    def set_menu(self,item,show=True):
+        """Sets the application menu"""
+        if type(item) is int:
+            capsule = self.get_resource_address(R_OBJECT,item)
+        else:
+            capsule = item
         
+        action = MENU_SHOW
+        if type(show) is int:
+            action = show
+        elif not show:
+            action = MENU_HIDE
+        
+        window_update(BEG_UPDATE)
+        _gem.menu_bar(capsule, action)
+        window_update(END_UPDATE)
+    
     def get_resource_address(self,type,index):
         """Retrieves the address of a resource element in a Python capsule.
         The returned object should never be directly modified."""
         if not self.resource:
             raise GEMError("A resource has not yet be loaded")
             
-        return _gem.rsrc.gaddr(type, index)
+        return _gem.rsrc_gaddr(type, index)
         
     def new_window(self, rect, name=None):
         """Opens an application-managed window"""
@@ -283,4 +341,39 @@ class Application:
                 self.keyboard_event.keycode = ret['key']
                 self.keyboard_event.process()
                 
+    def graphics_handle(self):
+        """Returns a VDI handle to the screen"""
+        vh,ignore = _gem.graf_handle()
+        return vh
+        
+    def send_message(self, data, target=None):
+        """Send a message to a gem application (self if target is None)"""
+        xmsg = data
+        if len(data) > 8:
+            raise ValueError("Message may only be 8 words long")
+        else:
+            while len(xmsg) < 8:
+                xmsg = xmsg + (0,)
             
+        bytemsg = struct.pack("@hhhhhhhh",*xmsg)
+        
+        if target is None:
+            ret = _gem.appl_write(self.id, 16, bytemsg)
+        elif type(target) is int:
+            ret = _gem.appl_write(target, 16, bytemsg)
+        else:
+            ret = _gem.appl_write(target.id, 16, bytemsg)
+                
+        return ret
+        
+    def draw_object(self,object,depth,position=None,center=True):
+        """Draws an AES object (usually from a resource)"""
+        xpos = position
+        if center:
+            position = _gem.form_center(object)
+        
+        _gem.objc_draw(object,0,depth,position)
+    
+    def form_do(self,object):
+        """Executes a form (dialog)"""
+        return _gem.form_do(object,0)

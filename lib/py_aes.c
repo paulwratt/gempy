@@ -26,10 +26,16 @@ PyObject* __CDECL py_appl_write(PyObject *self, PyObject *args)
 int ret;
 int app_id;
 char *message;
+int buflen;
 int msg_length;
     
-    if(!PyArg_ParseTuple(args,"iiy*",&app_id,&msg_length,&message))
+    if(!PyArg_ParseTuple(args,"iis#",&app_id,&msg_length,&message,&buflen))
         return NULL;
+    
+    if(buflen < msg_length) {
+        PyErr_SetString(GEMError,"Data length's are dangerously inconsistent in appl_write");
+        return NULL;
+    }
     
     ret = appl_write(app_id,msg_length,message);
     return Py_BuildValue("i",ret);
@@ -122,13 +128,12 @@ PyObject *obj;
 short x,y,w,h;
 int ret;
     
-    if(!PyArg_ParseTuple(args,"O(hhhh)",&obj,&x,&y,&w,&h))
+    if(!PyArg_ParseTuple(args,"O",&obj))
         return NULL;
         
     form_center(PyCapsule_GetPointer(obj,NULL),&x,&y,&w,&h);
     
-    Py_INCREF(Py_None);
-    return Py_None;
+    return Py_BuildValue("(iiii)",(int)x,(int)y,(int)w,(int)h);
 }
 
 /* --- Graphics Library --- */
@@ -505,3 +510,44 @@ static char *kwlist[] = {"mouse_buttons","mouse_movement","timer",NULL};
                             "key", (int)em_out.emo_kreturn,(int)em_out.emo_kmeta);
 }
 
+/* Menu Library */
+PyObject* __CDECL py_menu_bar(PyObject *self, PyObject *args)
+{
+PyObject *object;
+int action;
+int ret;
+
+    if(!PyArg_ParseTuple(args,"Oi",&object, &action))
+        return NULL;
+
+    ret = menu_bar(PyCapsule_GetPointer(object,NULL),action);
+    
+    if(ret == 0) {
+        PyErr_SetString(GEMError,"Menu bar failed to set properly");
+        return NULL;
+    }    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/* Object Library */
+PyObject* __CDECL py_objc_draw(PyObject *self, PyObject *args)
+{
+PyObject *object;
+int id,depth;
+int cx, cy, cw, ch;
+int ret;
+    
+    if(!PyArg_ParseTuple(args,"Oii(iiii)",&object,&id,&depth,&cx,&cy,&cw,&ch))
+        return NULL;
+    
+    ret = objc_draw(PyCapsule_GetPointer(object,NULL),id,depth,cx,cy,cw,ch);
+    
+    if(ret == 0) {
+        PyErr_SetString(GEMError,"Object draw call failed");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}

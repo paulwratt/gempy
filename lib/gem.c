@@ -49,7 +49,14 @@ GemMethods[] = {
     {"wind_set_string", py_wind_set_string, METH_VARARGS, "Set a string window parameter"},
     {"wind_update", py_wind_update, METH_VARARGS, "Lock window redraw for updates"},
     
+    /* AES Event Libary */
     {"evnt_multi", py_evnt_multi, METH_VARARGS | METH_KEYWORDS, "Process multiple GEM events."},
+
+    /* AES Menu Library */
+    {"menu_bar", py_menu_bar, METH_VARARGS, "Install or hide a GEM menubar"},
+
+    /* AES Object Library */
+    {"objc_draw", py_objc_draw, METH_VARARGS, "Draw an AES object to the screen"},
 
     /* VDI Functions */
     {"v_open_screen", py_v_open_screen, METH_NOARGS, "Open and retrieve a handle to a virtual screen workstation"},
@@ -126,6 +133,12 @@ PROC LibFunc[] = {
         /* AES Event Library */
         "py_evnt_multi", "Internal\n", py_evnt_multi,
         
+        /* AES Menu Library */
+        "py_menu_bar", "Internal\n", py_menu_bar,
+        
+        /* AES Object Library */
+        "py_objc_draw", "Internal\n", py_objc_draw,
+        
         /* VDI Functions */
         "py_v_open_screen", "Internal\n", py_v_open_screen,
         "py_v_clsvwk", "Internal\n", py_v_clsvwk,
@@ -138,7 +151,7 @@ PROC LibFunc[] = {
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 29, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 31, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 

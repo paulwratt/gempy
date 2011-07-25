@@ -29,5 +29,9 @@
  PyObject* __CDECL py_wind_update(PyObject *self, PyObject *args);
 
  PyObject* __CDECL py_evnt_multi(PyObject *self, PyObject *args, PyObject *kwargs);
+ 
+ PyObject* __CDECL py_menu_bar(PyObject *self, PyObject *args);
+ 
+ PyObject* __CDECL py_objc_draw(PyObject *self, PyObject *args);
 
 #endif /* __PY_AES_HEADERS */

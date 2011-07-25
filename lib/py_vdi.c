@@ -44,10 +44,10 @@ short pxarray[4];
     if(!PyArg_ParseTuple(args,"i(ii)(ii)",&handle, &x1, &y1, &x2, &y2))
         return NULL;
         
-    pxarray[0] = x1;
-    pxarray[1] = y1;
-    pxarray[2] = x2;
-    pxarray[3] = y2;
+    pxarray[0] = (short)x1;
+    pxarray[1] = (short)y1;
+    pxarray[2] = (short)x2;
+    pxarray[3] = (short)y2;
     
     v_bar(handle,pxarray);
     
