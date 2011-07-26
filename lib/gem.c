@@ -54,6 +54,7 @@ GemMethods[] = {
 
     /* AES Menu Library */
     {"menu_bar", py_menu_bar, METH_VARARGS, "Install or hide a GEM menubar"},
+    {"menu_tnormal", py_menu_tnormal, METH_VARARGS, "Highlight or unhighlight a menu option"},
 
     /* AES Object Library */
     {"objc_draw", py_objc_draw, METH_VARARGS, "Draw an AES object to the screen"},
@@ -135,6 +136,7 @@ PROC LibFunc[] = {
         
         /* AES Menu Library */
         "py_menu_bar", "Internal\n", py_menu_bar,
+        "py_menu_tnormal", "Internal\n", py_menu_tnormal,
         
         /* AES Object Library */
         "py_objc_draw", "Internal\n", py_objc_draw,
@@ -151,7 +153,7 @@ PROC LibFunc[] = {
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 31, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 32, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 

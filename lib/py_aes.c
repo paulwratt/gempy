@@ -530,6 +530,26 @@ int ret;
     return Py_None;
 }
 
+PyObject* __CDECL py_menu_tnormal(PyObject *self, PyObject *args)
+{
+PyObject *object;
+int action;
+int menu;
+int ret;
+
+    if(!PyArg_ParseTuple(args,"Oii",&object, &menu, &action))
+        return NULL;
+
+    ret = menu_tnormal(PyCapsule_GetPointer(object,NULL),(short)menu,(short)action);
+    
+    if(ret == 0) {
+        PyErr_SetString(GEMError,"Menu tnormal failed to set properly");
+        return NULL;
+    }    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 /* Object Library */
 PyObject* __CDECL py_objc_draw(PyObject *self, PyObject *args)
 {

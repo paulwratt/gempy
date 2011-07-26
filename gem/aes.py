@@ -206,6 +206,7 @@ class Application:
         
         self.windows = []
         self.resource = False
+        self.menu = None
         
         self.message_event = None
         self.button_event = None
@@ -224,6 +225,10 @@ class Application:
                 w.destroy()
             except:
                 pass
+                
+        if self.menu is not None:
+            _gem.menu_bar(self.menu,MENU_HIDE)
+            
         window_update(END_UPDATE)
         _gem.appl_exit(self.id)
         
@@ -256,6 +261,19 @@ class Application:
         window_update(BEG_UPDATE)
         _gem.menu_bar(capsule, action)
         window_update(END_UPDATE)
+        
+        self.menu = capsule
+        
+    def set_menu_state(self,id,highlight=False):
+        """Highlight (default) or unhighlight a menu item"""
+        
+        if self.menu is None:
+            raise ValueError("Application's menu is None.")
+        
+        if highlight:
+            _gem.menu_tnormal(self.menu,id,MENU_HIGHLIGHT)
+        else:
+            _gem.menu_tnormal(self.menu,id,MENU_NORMAL)
     
     def get_resource_address(self,type,index):
         """Retrieves the address of a resource element in a Python capsule.
@@ -366,12 +384,11 @@ class Application:
                 
         return ret
         
-    def draw_object(self,object,depth,position=None,center=True):
+    def draw_tree(self,object,depth,position=None,center=True):
         """Draws an AES object (usually from a resource)"""
         xpos = position
         if center:
             position = _gem.form_center(object)
-        
         _gem.objc_draw(object,0,depth,position)
     
     def form_do(self,object):

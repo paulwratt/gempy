@@ -151,3 +151,7 @@ MB_KALT = 0x0008
 MENU_HIDE = 0 
 MENU_SHOW = 1 
 MENU_INSTL = 100
+
+# Menu Hightlight Defintions
+MENU_HIGHLIGHT = 0
+MENU_NORMAL = 1
