@@ -283,9 +283,9 @@ class Application:
             
         return _gem.rsrc_gaddr(type, index)
         
-    def new_window(self, rect, name=None):
+    def new_window(self, rect, name=None, type=None):
         """Opens an application-managed window"""
-        w = Window()
+        w = Window(type=type)
         w.begin_update()
         if name is not None:
             w.set_name(name)
