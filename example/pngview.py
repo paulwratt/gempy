@@ -12,35 +12,33 @@ M_QUIT = 16
 ABOUT = 1
 B_ABOUT_OK = 1
 
-def redraw(window,data):
+class PictureWindow(gem.Window):
+    def __init__(self,app,filename,wh,data):
+        gem.Window.__init__(self, type=gem.NAME|gem.CLOSER|gem.MOVER)
+        
+        self.set_name(filename)
+        self.data = data
+        
+        self.open((10,10,wh[0],wh[1]+10))
+    
+    def draw(self):
 
-    window.begin_update()
-    vh = window.graphics_handle()
-    
-    rgbdata = data[2]
-    
-    wrect = window.get_work_rect()
-    
-    for r in window.get_invalid_rectangles():
-        todraw = window.intersect_work_area(r)
-        if todraw is not None:
-            gem.vdi.vs_clip(vh, True, todraw)
-            image_y = 0
-            for r in rgbdata:
-                image_x = 0
-                
-                pvalue = 0
-                pcount = 0
-                for c in r:
-                
-                    pvalue = pvalue + c
-                    pcount = pcount + 1
+        self.begin_update()
+        vh = self.graphics_handle()
+        
+        wrect = self.get_work_rect()
+        
+        for rect in self.get_invalid_rectangles():
+            todraw = self.intersect_work_area(rect)
+            if todraw is not None:
+                gem.vdi.vs_clip(vh, True, todraw)
+                image_y = 0
+                for r in self.data:
+                    image_x = 0
                     
-                    if pcount == 3:
-                
-                        pvalue = pvalue / 3
-                
-                        if c > pvalue:
+                    for c in r:
+                    
+                        if c > 128:
                             gem.vdi.vsf_color(vh,0)
                         else:
                             gem.vdi.vsf_color(vh,1)
@@ -48,23 +46,90 @@ def redraw(window,data):
                         y = wrect[1] + image_y
                         gem.vdi.bar(vh,(x,y,1,1))
                         image_x = image_x + 1
-                        #if image_x > data[0]:
-                        #    raise RuntimeError("Point {0} exceeds limit {1}".format(image_x,data[0]))
-                        pcount = 0
-                        pvalue = 0
-                        
-                image_y = image_y + 1
-            
-            gem.vdi.vs_clip(vh, False, todraw)
 
-    window.end_update()
+                    image_y = image_y + 1
+                
+                gem.vdi.vs_clip(vh, False, todraw)
+
+        self.end_update()
+
+class LoadingWindow(gem.Window):
+    def __init__(self,app,filename):
+        gem.Window.__init__(self, type=gem.NAME|gem.CLOSER)
+        
+        self.set_name("Loading "+filename)
+        
+        self.reader = png.Reader(filename)
+        self.raw_data = self.reader.asRGBA8()
+        
+        self.data = []
+        self.done = False
+        self.row = 0
+        
+        #self.load_thread = threading.Thread(target=self.load)
+        #self.load_thread.start()
+    
+    def load(self):
+        rgbdata = self.raw_data[2]
+
+        for r in rgbdata:
+            self.row = self.row + 1
+            
+            pvalue = 0
+            pcount = 0
+            
+            row = []
+            for c in r:
+                if pcount < 3:
+                    pvalue = pvalue + c
+                pcount = pcount + 1
+                
+                if pcount == 4:
+                    pvalue = pvalue / 3
+                    
+                    row.append(pvalue)
+
+                    #if image_x > data[0]:
+                    #    raise RuntimeError("Point {0} exceeds limit {1}".format(image_x,data[0]))
+                    pcount = 0
+                    pvalue = 0
+                    
+            self.data.append(row)
+            self.draw()
+        
+        self.done = True
+        self.close()
+        #self.app.send_message((0,self.app.id,0,gem.WM_CLOSED))
+        
+    def draw(self):
+        wrect = self.get_work_rect()
+        
+        vh = self.graphics_handle()
+        self.begin_update()
+        
+        for r in self.get_invalid_rectangles():
+            todraw = self.intersect_work_area(r)
+            if todraw is not None:
+                gem.vdi.vs_clip(vh, True, todraw)
+                
+                w = wrect[2]*self.row/self.raw_data[1]
+                
+                gem.vdi.vsf_color(vh,0)
+                gem.vdi.bar(vh,(wrect[0],wrect[1],w,wrect[3]))
+                
+                gem.vdi.vsf_color(vh,1)
+                gem.vdi.bar(vh,(wrect[0]+w,wrect[1],wrect[2]-w,wrect[3]))
+                
+                gem.vdi.vs_clip(vh, False, todraw)
+        
+        self.end_update()
 
 class AppMessageEvent(gem.MessageEvent):
-    def __init__(self,app):
+    def __init__(self,app,window):
         gem.MessageEvent.__init__(self)
         
         self.app = app
-        self.window = app.windows[0]
+        self.window = window
     
     def handle_menu(self, item, title=None):
         if item == M_QUIT:
@@ -94,27 +159,30 @@ class AppMessageEvent(gem.MessageEvent):
             self.window.resize(rect)
             
         elif self.message == gem.WM_REDRAW:
-            redraw(self.window,self.app.data)
+            self.window.draw()
         
         # Menu handling
         elif self.message == gem.MN_SELECTED:
             self.handle_menu(self.get_word(4),title=self.get_word(3))
 
-def start_app(filename):
 
-    reader = png.Reader(filename)
-    data = reader.asRGB8()
+def start_app(filename):
 
     app = gem.Application()
     app.load_resource("simple.rsc")
     app.set_menu(MENU)
 
-    app.data = data
+    wload = LoadingWindow(app,filename)
+    app.windows.append(wload)
+    wload.open((10,10,250,50))
+    wload.load()
+    #app.message_event = AppMessageEvent(app,wload)
 
-    w = app.new_window((0,10,data[0],data[1]),filename,
-                       type=gem.NAME|gem.MOVER|gem.CLOSER)
-    
-    app.message_event = AppMessageEvent(app)
+    #app.event_loop()
+
+    wpic = PictureWindow(app,filename,(wload.raw_data[0],wload.raw_data[1]),wload.data)
+    app.windows.append(wpic)
+    app.message_event = AppMessageEvent(app,wpic)
     
     app.event_loop()
     

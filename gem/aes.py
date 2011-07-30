@@ -283,7 +283,7 @@ class Application:
             
         return _gem.rsrc_gaddr(type, index)
         
-    def new_window(self, rect, name=None, type=None):
+    def new_window(self, rect, name=None, type=NAME|FULLER|MOVER|CLOSER|SIZER):
         """Opens an application-managed window"""
         w = Window(type=type)
         w.begin_update()
