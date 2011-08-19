@@ -571,3 +571,49 @@ int ret;
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+/* File Selector Library */
+PyObject* __CDECL py_fsel_input(PyObject *self, PyObject *args)
+{
+PyObject *ret;
+char *path;
+char *default_file;
+
+char *use_path;
+char *use_file;
+int result;
+int pathlen;
+    
+    default_file = NULL;
+    
+    if(!PyArg_ParseTuple(args,"s|s",&path,&default_file))
+        return NULL;
+    
+    pathlen = strlen(path);
+    if(pathlen < 200) pathlen = 200;
+    
+    use_path = (char *)malloc(pathlen*sizeof(char));
+    strcpy(use_path,path);
+    
+    use_file = (char *)malloc(13*sizeof(char));
+    use_file[0] = '\0';
+    if(default_file != NULL) {
+        if(strlen(default_file) <= 12)
+            strcpy(use_file,default_file);
+    }    
+    
+    if(fsel_input(use_path,use_file,&result) == 0) {
+        PyErr_SetString(GEMError,"Basic File Selector call failed.");
+        return NULL;
+    }
+    
+    if(result == 0) {
+        free(use_path);
+        free(use_file);
+        Py_INCREF(Py_None);
+        return Py_None;
+    } else {
+        ret = Py_BuildValue("ss",use_path,use_file);
+        return ret;
+    }
+}

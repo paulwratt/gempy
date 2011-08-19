@@ -53,6 +53,14 @@ def window_update(action):
     END_MCTRL, or BEG_MCTRL."""
     _gem.wind_update(action)
     
+def basic_file_dialog(path):
+    """Opens a basic file selection dialog starting at the
+    specified path."""
+    window_update(BEG_MCTRL)
+    ret = _gem.fsel_input(path)
+    window_update(END_MCTRL)
+    return ret
+    
 class Window:
     """A class wrapping GEM windows and their functionality"""
     

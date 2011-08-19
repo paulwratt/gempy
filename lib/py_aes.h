@@ -35,4 +35,6 @@
  
  PyObject* __CDECL py_objc_draw(PyObject *self, PyObject *args);
 
+ PyObject* __CDECL py_fsel_input(PyObject *self, PyObject *args);
+
 #endif /* __PY_AES_HEADERS */

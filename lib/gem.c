@@ -58,6 +58,9 @@ GemMethods[] = {
 
     /* AES Object Library */
     {"objc_draw", py_objc_draw, METH_VARARGS, "Draw an AES object to the screen"},
+    
+    /* AES File Selector Library */
+    {"fsel_input", py_fsel_input, METH_VARARGS, "Opens a basic file selector"},
 
     /* VDI Functions */
     {"v_open_screen", py_v_open_screen, METH_NOARGS, "Open and retrieve a handle to a virtual screen workstation"},
@@ -141,6 +144,9 @@ PROC LibFunc[] = {
         /* AES Object Library */
         "py_objc_draw", "Internal\n", py_objc_draw,
         
+        /* AES File Selector Library */
+        "fsel_input", "Internal\n", py_fsel_input,
+        
         /* VDI Functions */
         "py_v_open_screen", "Internal\n", py_v_open_screen,
         "py_v_clsvwk", "Internal\n", py_v_clsvwk,
@@ -153,7 +159,7 @@ PROC LibFunc[] = {
 };
 
 LDGLIB LibLdg[] = {
-        0x0001, 32, LibFunc, "GEM Extensions for Python", 0
+        0x0001, 33, LibFunc, "GEM Extensions for Python", 0
 };
 
 int main( void) 
